@@ -1,0 +1,67 @@
+aside.sidebar{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--text-color);
+    padding: 20px;
+}
+.sidebar__header{
+    margin-bottom: 20px;
+    border: 10x solid red;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.sidebar__header .sidebar__logo{
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid var(--sidebart-header-color);
+}
+.sidebar__title{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--sidebar-header-color);
+    margin-top: 10px;
+}
+.sidebar__list{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+}
+.sidebar__list .sidebar__item{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    color: var(--sidebar-text-color);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}   
+.sidebar__list .sidebar__item a{
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background-color: var(--sidebar-item-back);
+    text-decoration: none;
+    font-size: 1.2rem;
+    gap: 10px;
+    color: var(--sidebar-text-color);
+    padding: 10px;
+}
+.sidebar__list .sidebar__item a span:nth-child(1){
+    margin-top: 10px;
+}
+.sidebar__list .sidebar__item a:hover{
+    background-color: var(--sidebar-text-color);
+    color: var(--sidebar-item-back);
+}

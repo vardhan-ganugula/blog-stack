@@ -1,0 +1,19 @@
+.loading__container{
+    border-top: 2px solid var(--loader-border-color);
+    border-radius: 50%;
+    animation: loading 1.0s infinite cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+
+
+@keyframes loading {
+    0% {
+        transform: rotate(0deg);
+        filter: hue-rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+        filter: hue-rotate(360deg);
+
+    }
+}

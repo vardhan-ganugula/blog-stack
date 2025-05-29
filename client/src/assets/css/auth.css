@@ -1,0 +1,106 @@
+.auth__layout {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+} 
+
+.card{
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+  background-color: var(--bg-back);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.card__header{
+  text-align: center;
+  background-color: var(--bg-back);
+  padding-block: 15px;
+  font-size: 1.5rem;
+  color: var(--bg-primary-color);
+}
+.card__body{
+  padding: 20px;
+  background-color: var(--bg-primary-color);
+}
+.card__body .form__group{
+  display: flex;
+  flex-direction: column;
+  gap: 10px; 
+  margin-bottom: 5px;
+}
+
+.form__group label{
+  font-size: .9rem;
+  color: var(--bg-back);
+}
+.form__group input{
+  padding: 9px;
+  border: 1px solid var(--bg-back);
+  border-radius: 3px;
+  font-size: .8rem;
+  color: var(--bg-black);
+  outline: 2px solid transparent;
+}
+.form__group input:focus{
+  outline: 2px solid var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+.form__group input::placeholder{
+  color: var(--bg-black);
+  opacity: 0.4;
+}
+.btn{
+  all: unset;
+  padding: 7px 20px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: .8rem;
+  margin-top: 10px;
+  box-shadow: 0 0 10px #60D0F6;
+  color: var(--bg-primary-color);
+  background: #60D0F6;
+  background: conic-gradient(from 135deg, #60D0F6, #82D9F6);
+}
+.btn:hover{
+  background: conic-gradient(from 135deg, #82D9F6, #60D0F6);
+  box-shadow: 0 0 20px #60D0F6;
+}
+[data-theme="dark"] .btn{
+  border: none;
+  background: #F4DE60;
+  background: conic-gradient(from 135deg, #F4DE60, #F4E581);
+  box-shadow: 0 0 10px #F4E581,
+              0 0 20px #F4E581;
+  color: var(--background-color);
+  transition: all 0.3s ease-in-out;
+  font-weight: 500;
+}
+[data-theme="dark"] .btn:hover{
+  background: conic-gradient(from 135deg, #F4E581, #F4DE60);
+  box-shadow: 0 0 20px #F4E581,
+              0 0 40px #F4E581;
+}
+.card__body form p{
+  margin-top: 10px;
+  font-size: .8rem;
+}
+.card__body form p a{
+  color: var(--secondary-color);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.form__group .error{
+  color: var(--bg-danger-color);
+  font-size: .8rem;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.form__group .error::before{
+  content: "⚠️ ";
+  font-size: .9rem;
+}
+.card__body .btn:disabled{
+  opacity: 0.5;
+}
