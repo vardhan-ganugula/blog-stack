@@ -9,12 +9,10 @@ const blogSchema = new Schema({
     },
     content: {
         type: String,
-        required: true,
         trim: true
     },
     description: {
         type: String,
-        required: true,
         trim: true
     },
     tags: {
@@ -39,7 +37,12 @@ const blogSchema = new Schema({
     author: {
         type: String,
         required: true
-    }
+    },
+    draftId:{
+        type: String,
+        default: null,
+        unique: true
+    },
 }, {
     timestamps: true
 });

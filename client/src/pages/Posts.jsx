@@ -7,13 +7,15 @@ import { IoClose } from "react-icons/io5";
 import Loading from '../components/Loading'
 const TextEditor = React.lazy(() => import('../components/TextEditor'))
 import axios from '../utils/Axios';
-
+import { toast } from 'react-toastify'
 
 const Posts = () => {
+  const [draftId, setDraftId] = React.useState(Date.now());
   const { register,
     handleSubmit,
     reset,
     setValue,
+    getValues,
     formState: { errors, isSubmitting } } = useForm({
       resolver: zodResolver(postSchema),
       defaultValues: {
@@ -24,7 +26,7 @@ const Posts = () => {
         image: null
       }
     });
-  const [nodification, setNotification] = React.useState({
+  const [notification, setNotification] = React.useState({
     type: '',
     message: ''
   });
@@ -32,30 +34,54 @@ const Posts = () => {
   const [imgSrc, setImgSrc] = React.useState(null);
   const [tags, setTags] = React.useState([]);
 
-  const handleSaveDraft = (data) => {
-    console.log('Draft saved:', data);
-    setNotification({
-      type: 'error',
-      message: 'Draft saved successfully!'
-    });
-    reset()
+  // save the draft post
+  const handleSaveDraft = async(data) => {
+    data.image = imgSrc || '';
+    data.tags = JSON.stringify(tags);
+    data.draftId = draftId;
+    try {
+      const response = await axios.post('/blogs/save-draft', data)
+      setNotification({
+        type: 'success',
+        message: response.data.message || 'Draft saved successfully!'
+      })
+    } catch (error) {
+      console.error('Error saving draft:', error);
+      setNotification({
+        type: 'error',
+        message: 'Failed to save draft. Please try again.'
+      });
+      toast.error('Failed to save draft. Please try again.');
+    }
   }
 
+  // upload the post
   const handleUploadPost = async (data) => {
     data.image = imgSrc;
     data.tags = JSON.stringify(tags);
     try {
       const response = await axios.post('/blogs/publish', data)
-      alert(response.data)
+      setNotification({
+        type: 'success',
+        message: response.data.message || 'Post uploaded successfully!'
+      })
+      toast.success(response.data.message || 'Post uploaded successfully!');
+      // Reset form after successful post
+      reset();
+      setTags([]);
+      setImgSrc(null);
+      setDraftId(Date.now());
     } catch (error) {
       console.error('Error uploading post:', error);
       setNotification({
         type: 'error',
         message: 'Failed to upload post. Please try again.'
       });
+      toast.error('Failed to upload post. Please try again.');
     }
   }
 
+  // getting the image from the input and converting it to base64
   const handleSetImage = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -76,40 +102,60 @@ const Posts = () => {
     setValue('tags', value);
 
     if (value.includes(',')) {
-      const newTags = [...tags, ...value.split(',')
+      const newTags = value.split(',')
         .map(tag => tag.trim())
-        .filter(tag => tag)
-        .filter((tag, index, self) => self.indexOf(tag) === index)];
-
-      setTags(newTags);
+        .filter(tag => tag && !tags.includes(tag));
+      
+      if (newTags.length > 0) {
+        setTags(prev => [...prev, ...newTags]);
+      }
       setValue('tags', '');
     }
   }
 
   const handleTagsBlur = (e) => {
     const value = e.target.value.trim();
-    if (value) {
-      const newTags = [...tags, value].filter((tag, index, self) => self.indexOf(tag) === index);
-      setTags(newTags);
-      setValue('tags', newTags.join(', '));
-      e.target.value = '';
+    if (value && !tags.includes(value)) {
+      setTags(prev => [...prev, value]);
+      setValue('tags', '');
+    }
+  }
+
+  const handleTagsKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      const value = e.target.value.trim();
+      if (value && !tags.includes(value)) {
+        setTags(prev => [...prev, value]);
+        setValue('tags', '');
+      }
     }
   }
 
   const removeTag = (tagToRemove) => {
-    const updatedTags = tags.filter(tag => tag !== tagToRemove);
-    setTags(updatedTags);
-    setValue('tags', updatedTags.join(', '));
-
-    const tagsInput = document.getElementById('tags');
-    if (tagsInput) {
-      tagsInput.value = updatedTags.join(', ');
-    }
+    setTags(prev => prev.filter(tag => tag !== tagToRemove));
   }
 
   const handleContentChange = (content) => {
     setValue('content', content);
   }
+
+  const saveDraftInterval = React.useCallback(() => {
+    const data = getValues();
+    if (data.title || data.description || data.content) {
+      handleSaveDraft(data);
+    }
+  }, [getValues, handleSaveDraft])
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      saveDraftInterval();
+    }, 30000); // Save every 30 seconds instead of 5
+
+    return () => {
+      clearInterval(interval);
+    }
+  }, [saveDraftInterval]);
 
   return (
     <DashboardLayout>
@@ -169,9 +215,10 @@ const Posts = () => {
                 <input
                   id='tags'
                   {...register('tags')}
-                  placeholder='Enter tags and press comma or tab to add'
+                  placeholder='Enter tags and press comma, tab, or enter to add'
                   onChange={handleTagsChange}
                   onBlur={handleTagsBlur}
+                  onKeyDown={handleTagsKeyDown}
                 />
                 {errors.tags && <p className='error'>{errors.tags.message}</p>}
               </div>
@@ -179,9 +226,7 @@ const Posts = () => {
 
             <div className='dashboard__posts__container__right'>
               <div className='dashboard__posts__form'>
-                <h4>
-                  Featured Image
-                </h4>
+                <h4>Featured Image</h4>
                 <label htmlFor="image">
                   <div className='dashboard__posts__form__image'>
                     {imgSrc ? (
@@ -205,16 +250,12 @@ const Posts = () => {
               </div>
               <div className='dashboard__posts__notifier'>
                 <span
-
                   style={{
-                    color: nodification.type === 'error' ? '#d62828' : '#70e000',
+                    color: notification.type === 'error' ? '#d62828' : '#70e000',
                     fontWeight: 'bold',
                   }}
-
                 >
-                  {nodification.message || 'Ready to post!'}
-
-
+                  {notification.message || 'Ready to post!'}
                 </span>
               </div>
               <div className='dashboard__buttons'>
@@ -223,7 +264,7 @@ const Posts = () => {
                   type='submit'
                   disabled={isSubmitting}
                 >
-                  Post
+                  {isSubmitting ? 'Publishing...' : 'Post'}
                 </button>
                 <button
                   className='dashboard__button'
@@ -231,7 +272,7 @@ const Posts = () => {
                   onClick={handleSubmit(handleSaveDraft)}
                   type='button'
                 >
-                  Save Draft
+                  {isSubmitting ? 'Saving...' : 'Save Draft'}
                 </button>
               </div>
             </div>

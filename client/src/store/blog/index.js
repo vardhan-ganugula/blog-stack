@@ -4,7 +4,8 @@ import axios from '../../utils/Axios';
 const initialState = {
     blogPosts: [],
     isLoading: true,
-    currentBlog : null
+    currentBlog : null,
+    drafts: []
 } 
 export const getBlogs = createAsyncThunk(
     'blog/getBlogs',
@@ -19,6 +20,21 @@ export const getBlogs = createAsyncThunk(
         }
     }
 );
+
+export const getDrafts = createAsyncThunk(
+    'blog/getDrafts',
+    async () => {
+        try {
+            const response = await axios.get('/blogs/drafts');
+            const blogPosts = response.data.data;
+            return blogPosts;
+        } catch (error) {
+            console.log(error);
+            return [];
+        }
+    }
+);
+
 const authSlice = createSlice({
     name: 'blogs',
     initialState,
@@ -32,7 +48,8 @@ const authSlice = createSlice({
 
         getblog(state, action){
             state.currentBlog = state.blogPosts.filter((blog) => blog.slug == action.payload);
-        }
+        },
+
     },
     extraReducers: (builder) => {
         builder.addCase(getBlogs.fulfilled, (state, action) => {
@@ -44,6 +61,18 @@ const authSlice = createSlice({
             state.isLoading = false;
         });
         builder.addCase(getBlogs.pending, (state, action) => {
+            state.isLoading = true;
+        });
+
+        builder.addCase(getDrafts.fulfilled, (state, action) => {
+            state.drafts = action.payload;
+            state.isLoading = false;
+        });
+        builder.addCase(getDrafts.rejected, (state, action) => {
+            state.drafts = [];
+            state.isLoading = false;
+        });
+        builder.addCase(getDrafts.pending, (state, action) => {
             state.isLoading = true;
         });
         

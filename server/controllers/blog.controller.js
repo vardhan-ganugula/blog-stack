@@ -5,6 +5,7 @@ import { uploadImage } from "../services/lib.js";
 export const handlePublishPost = async (req, res) => {
 
     const data = req.body;
+    // console.log(draftId)
     const result = postSchema.safeParse(data);
     if (!result.success) {
         return res.status(400).json({
@@ -37,7 +38,7 @@ export const handlePublishPost = async (req, res) => {
     }
 
     try {
-        const blogPost = await BlogModel.create({
+        const blogPost = await BlogModel.updateOne({draftId: data.draftId}, {
             ...result.data,
             tags: [...new Set(JSON.parse(data.tags))],
             slug,
@@ -69,7 +70,7 @@ export const handleDraftPost = async (req, res) => {
 
     const data = req.body;
     let slug = Date.now();
-    let imageUrl;
+    let imageUrl = '';
 
     if (data.image) {
         try {
@@ -84,11 +85,40 @@ export const handleDraftPost = async (req, res) => {
         }
     }
 
+    try {
+        const existingPost = await BlogModel.findOne({ draftId: data.draftId }); 
+        if(existingPost){
+            const newPost = await BlogModel.updateOne({
+                draftId: data.draftId
+            }, {
+                title: data.title || '',
+                content: data.content || '',
+                description: data.description || '',
+                tags: [...new Set(JSON.parse(data.tags))],
+                slug,
+                imageUrl,
+                status: 'draft',
+                author: req.user.username
+
+            })
+
+
+            return res.status(200).json({
+                message: "draft updated successfully",
+                data: newPost
+            });
+        }
+    } catch (error) {
+        
+    }
     
     try {
         const blogPost = await BlogModel.create({
-            ...result.data,
+            title: data.title || '',
+            content: data.content || '',
+            description: data.description || '',
             tags: [...new Set(JSON.parse(data.tags))],
+            draftId: data.draftId,
             slug,
             imageUrl,
             status: 'draft',
@@ -130,3 +160,19 @@ export const getAllBlogs = async (req, res) => {
     }
 }
 
+export const getAllDrafts = async (req, res) => {
+    console.log('hi')
+    try {
+        const drafts = await BlogModel.find({ status: 'draft', author: req.user.username }).sort({ createdAt: -1 });
+        return res.status(200).json({
+            status: true,
+            data: drafts
+        })
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            status: false,
+            message: 'failed to load drafts'
+        }).status(500)
+    }
+}

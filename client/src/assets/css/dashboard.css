@@ -345,3 +345,37 @@
     display: inline-block; 
     width: 100%;
 }
+
+
+/* drafts stats */ 
+
+.dashbord__posts__stats{
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.dashbord__posts__stats .stat__box{
+    color: var(--primary-color);
+    background-color: var(--text-color);
+    width: 200px;
+    height: 200px;
+    border-radius: 5px;
+}
+.stat__box .stat__title{
+    font-weight: bold;
+    font-size: 1.5rem;
+    display: block;
+    margin-block: 20px;
+    text-align: center;
+}
+.stat__box .stat__count{
+    font-weight: bold;
+    font-size: 2.5rem;
+    display: block;
+    margin-block: 20px;
+    text-align: center;
+}

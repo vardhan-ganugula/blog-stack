@@ -15,6 +15,7 @@ import Blogpage from "./pages/Blogpage";
 import BlogPost from "./pages/BlogPost";
 import Posts from "./pages/Posts";
 import { getBlogs } from "./store/blog";
+import DraftPage from "./pages/DraftPage";
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/posts" element={<Posts />} />
+          <Route path="/drafts" element={<DraftPage />} />
           <Route path="/register" element={<Signup />} />
         </Route>
         <Route path="/blog" element={<Blogpage />} />
