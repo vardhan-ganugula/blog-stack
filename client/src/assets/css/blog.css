@@ -39,7 +39,7 @@ main.blog__main{
 }
 
 .blog__card .blog__content{
-    padding: 10px 20px;
+    padding: 10px;
     height: 100%;
     gap: 10px;
     flex-grow: 1;
@@ -53,7 +53,7 @@ main.blog__main{
 .blog__card .blog__content .blog__description{
     font-size: 1rem;
     color: var(--bg-secondary-color);
-    height: 100px;
+    height: 80px;
     overflow: hidden;
 }
 .blog__card .blog__content .blog__date{
@@ -132,11 +132,17 @@ main.blog__main{
     border-radius: 5px;
     margin-bottom: 20px;
 }
+.blog__article__container .blog__content{
+    padding: 20px;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
 
 .blog__article__container .blog__tags{
     display: flex;
     gap : 5px;
-    background-color: #1b1b1b;
     border-radius: 5px;
     padding: 10px;
 }
