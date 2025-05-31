@@ -235,7 +235,7 @@ const ProfileCard = () => {
                     <div style={styles.sessionInfo}>
                       <p style={styles.sessionDevice}>{session.device}</p>
                       <p style={styles.sessionTime}>
-                        Last active: {session.lastActive}
+                        Last active: {session.lastActive} GMT 0:00
                       </p>
                     </div>
                     <span
