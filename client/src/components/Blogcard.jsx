@@ -14,7 +14,6 @@ const Blogcard = ({
   if (tags.length > 0) {
     blogTags = tags.slice(0, 5);
   }
-  console.log(slug)
   return (
     <div className='blog__card'
     

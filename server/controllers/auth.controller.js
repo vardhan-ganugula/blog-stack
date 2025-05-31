@@ -191,7 +191,6 @@ export async function logout(req, res) {
   }
   try {
     const sessionId = decodeToken(refreshToken).sessionId;
-    console.log(sessionId);
     const session = await sessionModel.findOneAndDelete({ _id: sessionId });
     if (!session) {
       return res.status(400).json({ message: "Invalid refresh token" });

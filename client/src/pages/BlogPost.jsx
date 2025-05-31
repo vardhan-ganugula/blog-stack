@@ -9,7 +9,6 @@ const BlogPost = () => {
   const blogs = useSelector(state => state.blog.blogPosts);
   const isLoading = useSelector(state => state.blog.isLoading)
   const blog = blogs.filter(val => val.slug == slug)[0]
-  console.log(blog)
   return (
     <main>
       <div className='blog__article__container'>

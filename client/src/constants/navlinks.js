@@ -10,7 +10,7 @@ export const navLinks = [
     },
     {
         name: 'About',
-        link : '/about',
+        link : 'https://github.com/vardhan-ganugula/blog-stack',
     },
     {
         name: 'Blog',
