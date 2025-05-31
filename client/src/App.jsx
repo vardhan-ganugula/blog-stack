@@ -35,7 +35,7 @@ function App() {
     <>
       <Header />
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Blogpage />} />
         <Route path="/verify/:token" element={<Verify />} />
         <Route path="/verify/" element={<Verify />} />
         <Route path="/verify-email" element={<SendVerification />} />

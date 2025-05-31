@@ -10,14 +10,18 @@ Blog Stack is a full-stack blogging platform built with the MERN stack (MongoDB,
 - User profile management
 - Drafts and published posts
 - Responsive and modern UI
-- Protected routes for authenticated users
+- Protected routes for authenticated users 
+- Email notifications for account verification
+- Secure JWT-based authentication
+- Cloudinary integration for image uploads
+- Session management for user sessions
 
 ## Tech Stack
 
 - **Frontend:** React, Vite, CSS Modules
 - **Backend:** Node.js, Express.js
 - **Database:** MongoDB
-- **Authentication:** JWT, Cookies
+- **Authentication:** JWT, Cookies and Sessions
 - **Other:** dotenv, CORS, cookie-parser
 
 ## Getting Started
