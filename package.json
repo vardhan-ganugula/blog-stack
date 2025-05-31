@@ -1,0 +1,12 @@
+{
+  "name": "retero",
+  "version": "1.0.0",
+  "description": "Blog Stack is a full-stack blogging platform built with the MERN stack (MongoDB, Express.js, React, Node.js). It provides user authentication, blog creation, editing, and management features, with a modern frontend and secure backend API.",
+  "main": "test.mongodb.js",
+  "scripts": {
+    "build" : "cd client && npm run build",
+    "start": "cd server && npm start"
+  },
+  "author": "",
+  "license": "ISC"
+}
