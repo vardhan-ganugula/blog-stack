@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { setAuth } from "../store/auth/index";
+import  {Link} from "react-router-dom";
 
 const Signup = () => {
   const {
@@ -19,7 +20,7 @@ const Signup = () => {
   });
   const dispatch = useDispatch();
   const handleSignup = async (data) => {
-    const toastId = toast.loading("Logging in...");
+    const toastId = toast.loading("Registering...");
     try {
       const resp = await axios.post("/auth/register", data);
       const { message, user } = resp.data;
@@ -101,7 +102,10 @@ const Signup = () => {
               Register
             </button>
             <p className="form__footer">
-              Already have an account 🤔? <a href="/login">login</a>
+              Already have an account 🤔? <Link to="/login">login</Link>
+            </p>
+            <p className="form__footer">
+              Send Verification Email 🤔? <Link to="/verify-email">Send Verification Email</Link>
             </p>
           </form>
         </div>

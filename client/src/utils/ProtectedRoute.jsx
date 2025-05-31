@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Loading from "../components/Loading";
 
 
 const publicRoutes = ["/login", "/register"];
@@ -9,7 +10,7 @@ const ProtectedRoute = () => {
   const user = useSelector((state) => state.auth.user);
   const isLoading = useSelector((state) => state.auth.isLoading);
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Loading size="500px" height="100vh" />;
   }
   
   if (!user) {
