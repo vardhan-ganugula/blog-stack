@@ -38,7 +38,10 @@ export async function login(req, res) {
     const session = await sessionModel.create({
       userId: user._id,
       userAgent: req.headers["user-agent"],
-      ipAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress  || req.ip,
+      ipAddress:
+        req.headers["x-forwarded-for"] ||
+        req.connection.remoteAddress ||
+        req.ip,
     });
 
     if (!session) {
@@ -131,7 +134,10 @@ export async function register(req, res) {
     const session = await sessionModel.create({
       userId: newUser._id,
       userAgent: req.headers["user-agent"],
-      ipAddress: req.headers['x-forwarded-for'] || req.connection.remoteAddress  || req.ip,
+      ipAddress:
+        req.headers["x-forwarded-for"] ||
+        req.connection.remoteAddress ||
+        req.ip,
     });
 
     if (!session) {
@@ -179,13 +185,13 @@ export async function register(req, res) {
   }
 }
 export async function logout(req, res) {
-  const refreshToken = req.cookies['refresh-token'];
+  const refreshToken = req.cookies["refresh-token"];
   if (!refreshToken) {
     return res.status(401).json({ message: "Unauthorized" });
   }
   try {
     const sessionId = decodeToken(refreshToken).sessionId;
-    console.log(sessionId)
+    console.log(sessionId);
     const session = await sessionModel.findOneAndDelete({ _id: sessionId });
     if (!session) {
       return res.status(400).json({ message: "Invalid refresh token" });
@@ -210,15 +216,21 @@ export async function verifyEmail(req, res) {
       verificationTokenExpires: { $gt: Date.now() },
     });
     if (!user) {
-      return res.status(400).json({ status: 0, message: "Invalid or expired token" });
+      return res
+        .status(400)
+        .json({ status: 0, message: "Invalid or expired token" });
     }
     user.verified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
     await user.save();
-    return res.status(200).json({ status: 1, message: "Email verified successfully" });
+    return res
+      .status(200)
+      .json({ status: 1, message: "Email verified successfully" });
   } catch (error) {
-    return res.status(500).json({status: 0, message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ status: 0, message: "Internal server error" });
   }
 }
 
@@ -244,10 +256,13 @@ export async function handleVerificationEmail(req, res) {
     return res.status(500).json({ message: "Internal server error" });
   }
 
-
   try {
     await sendVerificationEmail(email, verificationToken);
-    const newUser = await userModel.findOneAndUpdate({email}, {verificationToken, verificationTokenExpires}, {new: true});
+    const newUser = await userModel.findOneAndUpdate(
+      { email },
+      { verificationToken, verificationTokenExpires },
+      { new: true }
+    );
   } catch (error) {
     console.error("Error sending verification email:", error);
     return res
@@ -257,4 +272,45 @@ export async function handleVerificationEmail(req, res) {
   return res
     .status(200)
     .json({ status: 1, message: "Verification email sent successfully" });
+}
+
+function parseUserAgent(ua) {
+  let os = "Unknown OS";
+
+  if (/Windows NT 10.0/.test(ua)) os = "Windows 10";
+  else if (/Windows NT 6.3/.test(ua)) os = "Windows 8.1";
+  else if (/Mac OS X/.test(ua)) os = "macOS";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/iPhone/.test(ua)) os = "iOS";
+
+
+  return os;
+}
+
+
+export async function getUserSessions(req, res) {
+  const userId = req.user._id;
+  try {
+    const sessions = await sessionModel
+      .find({ userId })
+      .sort({ createdAt: -1 });
+    
+    if (!sessions || sessions.length === 0) {
+      return res.status(404).json({ message: "No active sessions found" });
+    }
+    const result = sessions.map((session) => {
+      const obj = session.toObject();
+      const date = new Date(session.createdAt).toLocaleString()
+      obj.device = parseUserAgent(session.userAgent);
+      obj.lastActive = date;
+      
+      obj.valid = new Date(session.createdAt) > new Date(Date.now() - 15 * 60 * 1000); 
+
+      return obj;
+    })
+    return res.status(200).json({ sessions : result });
+  } catch (error) {
+    console.error("Error fetching user sessions:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }

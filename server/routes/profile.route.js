@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import { getUserSessions } from '../controllers/auth.controller.js';
 
 const router = Router(); 
 
@@ -12,5 +13,6 @@ router.get('/profile', (req,res)=> {
     return res.status(200).json({ user });
 });
 
+router.get('/sessions', getUserSessions);
 
 export default router;

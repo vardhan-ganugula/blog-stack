@@ -16,6 +16,7 @@ const Posts = () => {
     reset,
     setValue,
     getValues,
+    watch,
     formState: { errors, isSubmitting } } = useForm({
       resolver: zodResolver(postSchema),
       defaultValues: {
@@ -33,58 +34,98 @@ const Posts = () => {
   const formRef = React.useRef(null);
   const [imgSrc, setImgSrc] = React.useState(null);
   const [tags, setTags] = React.useState([]);
+  const [isAutoSaving, setIsAutoSaving] = React.useState(false);
 
-  // save the draft post
-  const handleSaveDraft = async(data) => {
-    data.image = imgSrc || '';
-    data.tags = JSON.stringify(tags);
-    data.draftId = draftId;
+  const handleSaveDraft = React.useCallback(async(data, isAutoSave = false) => {
+    if (isAutoSave) setIsAutoSaving(true);
+    
+    const formData = {
+      ...data,
+      image: imgSrc || '',
+      tags: JSON.stringify(tags),
+      draftId: draftId
+    };
+
     try {
-      const response = await axios.post('/blogs/save-draft', data)
-      setNotification({
-        type: 'success',
-        message: response.data.message || 'Draft saved successfully!'
-      })
+      const response = await axios.post('/blogs/save-draft', formData);
+      
+      if (!isAutoSave) {
+        setNotification({
+          type: 'success',
+          message: response.data.message || 'Draft saved successfully!'
+        });
+        toast.success('Draft saved successfully!');
+      } else {
+        setNotification({
+          type: 'success',
+          message: 'Auto-saved'
+        });
+      }
     } catch (error) {
       console.error('Error saving draft:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to save draft';
+      
       setNotification({
         type: 'error',
-        message: 'Failed to save draft. Please try again.'
+        message: errorMessage
       });
-      toast.error('Failed to save draft. Please try again.');
+      
+      if (!isAutoSave) {
+        toast.error(errorMessage);
+      }
+    } finally {
+      if (isAutoSave) {
+        setIsAutoSaving(false);
+        setTimeout(() => {
+          setNotification(prev => prev.message === 'Auto-saved' ? { type: '', message: '' } : prev);
+        }, 2000);
+      }
     }
-  }
+  }, [imgSrc, tags, draftId]);
 
-  // upload the post
   const handleUploadPost = async (data) => {
-    data.image = imgSrc;
-    data.tags = JSON.stringify(tags);
+    const formData = {
+      ...data,
+      image: imgSrc || '',
+      tags: JSON.stringify(tags),
+      draftId: draftId
+    };
+
     try {
-      const response = await axios.post('/blogs/publish', data)
+      const response = await axios.post('/blogs/publish', formData);
+      
       setNotification({
         type: 'success',
-        message: response.data.message || 'Post uploaded successfully!'
-      })
-      toast.success(response.data.message || 'Post uploaded successfully!');
-      // Reset form after successful post
+        message: response.data.message || 'Post published successfully!'
+      });
+      toast.success(response.data.message || 'Post published successfully!');
+      
       reset();
       setTags([]);
       setImgSrc(null);
       setDraftId(Date.now());
+      
     } catch (error) {
-      console.error('Error uploading post:', error);
+      console.error('Error publishing post:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to publish post';
+      
       setNotification({
         type: 'error',
-        message: 'Failed to upload post. Please try again.'
+        message: Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage
       });
-      toast.error('Failed to upload post. Please try again.');
+      toast.error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
     }
   }
 
-  // getting the image from the input and converting it to base64
   const handleSetImage = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Image size must be less than 10MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImgSrc(reader.result);
@@ -136,26 +177,45 @@ const Posts = () => {
     setTags(prev => prev.filter(tag => tag !== tagToRemove));
   }
 
-  const handleContentChange = (content) => {
-    setValue('content', content);
-  }
+  const handleContentChange = React.useCallback((content) => {
+    setValue('content', content, { shouldValidate: false });
+    clearTimeout(window.autoSaveTimeout);
+    window.autoSaveTimeout = setTimeout(() => {
+      const data = getValues();
+      if (data.title?.trim() || data.description?.trim() || content?.trim() || tags.length > 0) {
+        handleSaveDraft({ ...data, content }, true);
+      }
+    }, 5000);
+  }, [setValue, getValues, tags, handleSaveDraft]);
 
-  const saveDraftInterval = React.useCallback(() => {
+  const autoSave = React.useCallback(() => {
     const data = getValues();
-    if (data.title || data.description || data.content) {
-      handleSaveDraft(data);
+    if (data.title?.trim() || data.description?.trim() || data.content?.trim() || tags.length > 0) {
+      handleSaveDraft(data, true);
     }
-  }, [getValues, handleSaveDraft])
+  }, [getValues, tags, handleSaveDraft]);
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      saveDraftInterval();
-    }, 30000); // Save every 30 seconds instead of 5
+    clearTimeout(window.formAutoSaveTimeout);
+    window.formAutoSaveTimeout = setTimeout(() => {
+      autoSave();
+    }, 5000);
 
-    return () => {
-      clearInterval(interval);
-    }
-  }, [saveDraftInterval]);
+    return () => clearTimeout(window.formAutoSaveTimeout);
+  }, [tags, imgSrc]); 
+
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const data = getValues();
+        handleSaveDraft(data);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [getValues]);
 
   return (
     <DashboardLayout>
@@ -248,6 +308,7 @@ const Posts = () => {
                 />
                 {errors.image && <p className='error'>{errors.image.message}</p>}
               </div>
+              
               <div className='dashboard__posts__notifier'>
                 <span
                   style={{
@@ -255,16 +316,17 @@ const Posts = () => {
                     fontWeight: 'bold',
                   }}
                 >
-                  {notification.message || 'Ready to post!'}
+                  {isAutoSaving ? 'Auto-saving...' : (notification.message || 'Ready to post!')}
                 </span>
               </div>
+              
               <div className='dashboard__buttons'>
                 <button
                   className='dashboard__button'
                   type='submit'
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Publishing...' : 'Post'}
+                  {isSubmitting ? 'Publishing...' : 'Publish'}
                 </button>
                 <button
                   className='dashboard__button'
@@ -274,6 +336,10 @@ const Posts = () => {
                 >
                   {isSubmitting ? 'Saving...' : 'Save Draft'}
                 </button>
+              </div>
+              
+              <div className='dashboard__help__text'>
+                <small>Press Ctrl+S (Cmd+S on Mac) to save draft quickly</small>
               </div>
             </div>
           </form>

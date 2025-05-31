@@ -16,6 +16,7 @@ import BlogPost from "./pages/BlogPost";
 import Posts from "./pages/Posts";
 import { getBlogs } from "./store/blog";
 import DraftPage from "./pages/DraftPage";
+import Profile from "./pages/Profile";
 
 function App() {
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="/posts" element={<Posts />} />
           <Route path="/drafts" element={<DraftPage />} />
           <Route path="/register" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
         <Route path="/blog" element={<Blogpage />} />
         <Route path="/blog/:slug" element={<BlogPost/>} />

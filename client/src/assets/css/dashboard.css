@@ -219,7 +219,7 @@
 .dashboard__buttons {
     display: flex;
     gap: 12px;
-    margin-top: auto;
+    /* margin-top: auto; */
 }
 
 .dashboard__button {
